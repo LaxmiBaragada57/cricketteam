@@ -6,7 +6,7 @@ const sqlite3 = require("sqlite3");
 const app = express();
 app.use(express.json());
 
-const dbPath = path.join(__dirname, "goodreads.db");
+const dbPath = path.join(__dirname, "cricketTeam.db");
 
 let db = null;
 
@@ -27,23 +27,35 @@ const initializeDBAndServer = async () => {
 
 initializeDBAndServer();
 
-//get players api
+//get players api//
 app.get("/players/", async (request, response) => {
   const getPlayersQuery = `
-    select *
-    from cricket_team
-    order by player_id;`;
-  const playersArray = await db.all(getPlayersQuery);
+    SELECT
+      *
+    FROM
+      cricket_team
+    ORDER BY
+      player_id;`;
+  let dbObject = await db.all(getPlayersQuery);
+  let convertDbObjectToResponseObject = (dbObject) => {
+    return {
+      playerId: dbObject.player_id,
+      playerName: dbObject.player_name,
+      jerseyNumber: dbObject.jersey_number,
+      role: dbObject.role,
+    };
+  };
+  const playersArray = convertDbObjectToResponseObject(dbObject);
   response.send(playersArray);
 });
 
 //create player api
 app.post("/players/", async (request, response) => {
   const { playerDetails } = request.body;
-  const { player_id, player_name, jersey_number, role } = playerDetails;
+  const { player_name, jersey_number, role } = playerDetails;
   const addPlayerQuery = `
-    insert into cricket_team (player_id,player_name,jersey_number,role)
-    values ('${playerId}','${playerName}','${jerseyNumber}','${role}');`;
+    insert into cricket_team (player_name,jersey_number,role)
+    values ('${player_name}','${jersey_number}','${role}';`;
   const dbResponse = await db.run(addPlayerQuery);
   response.send("Player Added to Team");
 });
